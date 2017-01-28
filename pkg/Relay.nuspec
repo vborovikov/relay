@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Relay</id>
+    <version>1.0.0.0</version>
+    <title>Relay Toolkit</title>
+    <authors>Vladislav Borovikov</authors>
+    <owners>Vladislav Borovikov</owners>
+    <licenseUrl>https://github.com/vborovikov/relay/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/vborovikov/relay</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Mediator Toolkit for .NET apps</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright © 2017 Vladislav Borovikov</copyright>
+    <tags>cqrs ui api mediator mvvm</tags>
+    <dependencies>
+      <group targetFramework="netstandard1.3">
+        <dependency id="NETStandard.Library" version="[1.6.0, )" />
+        <dependency id="System.ComponentModel" version="[4.0.1, )" />
+        <dependency id="System.Reflection" version="[4.1.0, )" />
+        <dependency id="System.Reflection.TypeExtensions" version="[4.1.0, )" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
