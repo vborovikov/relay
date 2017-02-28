@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Relay</id>
+    <id>RelayTk</id>
     <version>1.0.0.0</version>
     <title>Relay Toolkit</title>
     <authors>Vladislav Borovikov</authors>
