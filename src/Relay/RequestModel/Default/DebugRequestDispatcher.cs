@@ -1,4 +1,6 @@
-﻿namespace Relay.RequestModel.Default
+﻿#define DEBUG
+
+namespace Relay.RequestModel.Default
 {
     using System;
     using System.Diagnostics;
