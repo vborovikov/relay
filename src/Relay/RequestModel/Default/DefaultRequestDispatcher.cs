@@ -6,33 +6,29 @@
     using System.Reflection;
     using System.Threading.Tasks;
 
-    public class DefaultRequestDispatcher : IRequestDispatcher
+    public abstract class DefaultRequestDispatcherBase : IRequestDispatcher
     {
-        private readonly IServiceProvider serviceProvider;
         private readonly MethodInfo runAsyncMethod;
         private readonly MethodInfo runMethod;
 
-        public DefaultRequestDispatcher(IServiceProvider serviceProvider)
+        protected DefaultRequestDispatcherBase()
         {
-            this.serviceProvider = serviceProvider;
-            this.runMethod = GetType().GetTypeInfo().GetDeclaredMethod(nameof(RunInternal));
-            this.runAsyncMethod = GetType().GetTypeInfo().GetDeclaredMethod(nameof(RunAsyncInternal));
+            this.runMethod = typeof(DefaultRequestDispatcherBase).GetTypeInfo().GetDeclaredMethod(nameof(RunInternal));
+            this.runAsyncMethod = typeof(DefaultRequestDispatcherBase).GetTypeInfo().GetDeclaredMethod(nameof(RunAsyncInternal));
         }
 
         public override string ToString() => "Request";
 
         public Task ExecuteAsync<TCommand>(TCommand command) where TCommand : ICommand
         {
-            var asyncCommandHandler =
-                this.serviceProvider.GetService(typeof(IAsyncCommandHandler<TCommand>)) as IAsyncCommandHandler<TCommand>;
+            var asyncCommandHandler = GetService(typeof(IAsyncCommandHandler<TCommand>)) as IAsyncCommandHandler<TCommand>;
             if (asyncCommandHandler != null)
             {
                 return asyncCommandHandler.ExecuteAsync(command);
             }
             else
             {
-                var commandHandler =
-                    this.serviceProvider.GetService(typeof(ICommandHandler<TCommand>)) as ICommandHandler<TCommand>;
+                var commandHandler = GetService(typeof(ICommandHandler<TCommand>)) as ICommandHandler<TCommand>;
                 if (commandHandler != null)
                 {
                     return Task.Run(delegate { commandHandler.Execute(command); });
@@ -45,7 +41,7 @@
         public Task<TResult> RunAsync<TResult>(IQuery<TResult> query)
         {
             var queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-            var queryHandler = this.serviceProvider.GetService(queryHandlerType);
+            var queryHandler = GetService(queryHandlerType);
 
             if (queryHandler != null)
             {
@@ -55,7 +51,7 @@
             else
             {
                 var asyncQueryHandlerType = typeof(IAsyncQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-                var asyncQueryHandler = this.serviceProvider.GetService(asyncQueryHandlerType);
+                var asyncQueryHandler = GetService(asyncQueryHandlerType);
 
                 if (asyncQueryHandler != null)
                 {
@@ -66,6 +62,8 @@
 
             return Task.FromResult(default(TResult));
         }
+
+        protected abstract object GetService(Type serviceType);
 
         private Task<TResult> RunAsyncInternal<TQuery, TResult>(TQuery query, IAsyncQueryHandler<TQuery, TResult> handler) where TQuery : IQuery<TResult>
         {
@@ -78,5 +76,17 @@
             var result = handler.Run(query);
             return result;
         }
+    }
+
+    public class DefaultRequestDispatcher : DefaultRequestDispatcherBase
+    {
+        private readonly IServiceProvider serviceProvider;
+
+        public DefaultRequestDispatcher(IServiceProvider serviceProvider)
+        {
+            this.serviceProvider = serviceProvider;
+        }
+
+        protected override object GetService(Type serviceType) => this.serviceProvider.GetService(serviceType);
     }
 }
