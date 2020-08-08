@@ -43,7 +43,8 @@
             {
                 this.isScheduling = true;
                 var actualDelay = delay ?? TimeSpan.Zero;
-                this.runTimer.Change(actualDelay, actualDelay > TimeSpan.Zero ? actualDelay : DefaultTryAgainPeriod);
+                var period = actualDelay > TimeSpan.Zero ? actualDelay : DefaultTryAgainPeriod;
+                this.runTimer.Change(actualDelay, period);
             }
         }
 

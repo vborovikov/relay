@@ -39,6 +39,14 @@
 
         public bool IsActive { get; private set; }
 
+        public bool IsCompleted => this.state.ProcessStatus switch
+        {
+            ProcessStatus.Executed => true,
+            ProcessStatus.Compensated => true,
+            ProcessStatus.Aborted => true,
+            _ => false
+        };
+
         public event EventHandler<ProcessChangeEventArgs> Changed;
 
         public Task<State> ProcessingTask => this.runTaskSource?.Task ?? Task.FromResult(this.state.Clone());
@@ -93,7 +101,7 @@
 
         protected override void OnStarted()
         {
-            this.startTaskSource.SetResult(this.state.Clone());
+            this.startTaskSource.TrySetResult(this.state.Clone());
         }
 
         protected override void OnStopped()
@@ -137,9 +145,7 @@
 
         private bool EnsureNotCompleted(bool throwOnCompleted = true)
         {
-            if (this.Status == ProcessStatus.Aborted ||
-                this.Status == ProcessStatus.Executed ||
-                this.Status == ProcessStatus.Compensated)
+            if (this.IsCompleted)
             {
                 if (throwOnCompleted)
                     throw new InvalidOperationException();
@@ -153,7 +159,7 @@
         protected override Task<TimeSpan> ExecuteAsync(State state)
         {
             return ResumeAsync(this.runCancelSource.Token);
-        }
+        }   
 
         protected override void DisposeManagedObjects()
         {
