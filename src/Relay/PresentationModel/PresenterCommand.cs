@@ -31,7 +31,12 @@
         /// <summary>
         /// Occurs when changes occur that affect whether or not the command should execute.
         /// </summary>
-        public virtual event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { this.presenter.CommandManager.RequerySuggested += value; }
+            remove { this.presenter.CommandManager.RequerySuggested -= value; }
+        }
+
 
         /// <summary>
         /// Defines the method that determines whether the command can execute in its current state.
@@ -42,7 +47,7 @@
         /// </returns>
         public bool CanExecute(object parameter)
         {
-            return !this.isExecuting || CanExecuteOverride(parameter);
+            return !this.isExecuting && CanExecuteOverride(parameter);
         }
 
         /// <summary>
@@ -57,7 +62,7 @@
 
                 using (this.presenter.Busy())
                 {
-                    await ExecuteAsync(parameter);
+                    await ExecuteOverrideAsync(parameter);
                 }
             }
             finally
@@ -68,7 +73,7 @@
 
         protected virtual void OnCanExecuteChanged(EventArgs e)
         {
-            this.CanExecuteChanged?.Invoke(this, e);
+            this.presenter.CommandManager.InvalidateRequerySuggested();
         }
 
         /// <summary>
@@ -84,7 +89,7 @@
         /// When overridden in a derived class, defines the method to be called when the command is invoked.
         /// </summary>
         /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to null.</param>
-        protected abstract Task ExecuteAsync(object parameter);
+        protected abstract Task ExecuteOverrideAsync(object parameter);
 
         private void EndExecuting()
         {
@@ -146,7 +151,7 @@
         /// When overridden in a derived class, defines the method to be called when the command is invoked.
         /// </summary>
         /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to null.</param>
-        protected override Task ExecuteAsync(object parameter)
+        protected override Task ExecuteOverrideAsync(object parameter)
         {
             return this.execute();
         }
@@ -197,7 +202,7 @@
         /// When overridden in a derived class, defines the method to be called when the command is invoked.
         /// </summary>
         /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to null.</param>
-        protected override Task ExecuteAsync(object parameter)
+        protected override Task ExecuteOverrideAsync(object parameter)
         {
             return this.execute((T)parameter);
         }

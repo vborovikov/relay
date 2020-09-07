@@ -286,7 +286,7 @@
 
         protected virtual void OnChanged(ProcessChangeEventArgs e)
         {
-            Changed?.Invoke(this, e);
+            this.Changed?.Invoke(this, e);
         }
 
         private void OnChanged()

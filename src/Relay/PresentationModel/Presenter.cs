@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows.Input;
@@ -10,17 +11,45 @@
     /// <summary>
     /// Abstracts the View and serves in data binding between the View and the Model.
     /// </summary>
-    public abstract class Presenter : INotifyPropertyChanged
+    public abstract class Presenter : INotifyPropertyChanged, ICommandManager
     {
-        private sealed class BusyMonitor : IDisposable
+        private abstract class PresenterHelper : IDisposable
         {
-            private readonly Presenter presenter;
-            private bool isDisposed = false;
+            protected readonly Presenter presenter;
+            private bool isDisposed;
 
-            public BusyMonitor(Presenter presenter)
+            protected PresenterHelper(Presenter presenter)
             {
                 this.presenter = presenter;
+            }
 
+            public void Dispose()
+            {
+                // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected abstract void OnDispose();
+
+            private void Dispose(bool disposing)
+            {
+                if (!this.isDisposed)
+                {
+                    if (disposing)
+                    {
+                        OnDispose();
+                    }
+
+                    this.isDisposed = true;
+                }
+            }
+        }
+
+        private sealed class BusyMonitor : PresenterHelper
+        {
+            public BusyMonitor(Presenter presenter) : base(presenter)
+            {
                 var getBusy = false;
                 if (Interlocked.CompareExchange(ref this.presenter.busyCounter, 1, 0) == 0)
                 {
@@ -37,30 +66,35 @@
                 }
             }
 
-            public void Dispose()
+            protected override void OnDispose()
             {
-                Dispose(true);
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (this.isDisposed == false)
+                if (Interlocked.Decrement(ref this.presenter.busyCounter) == 0)
                 {
-                    if (disposing)
-                    {
-                        if (Interlocked.Decrement(ref this.presenter.busyCounter) == 0)
-                        {
-                            this.presenter.RaisePropertyChanged(nameof(Presenter.IsBusy));
-                        }
-                    }
-
-                    this.isDisposed = true;
+                    this.presenter.RaisePropertyChanged(nameof(Presenter.IsBusy));
                 }
             }
         }
 
+        private sealed class StatusUpdater : PresenterHelper
+        {
+            public StatusUpdater(Presenter presenter, string status) : base(presenter)
+            {
+                this.presenter.Status = status;
+            }
+
+            protected override void OnDispose()
+            {
+                this.presenter.Status = DefaultStatus;
+            }
+        }
+
+        private const string DefaultStatus = "Ready";
+
+        private static ICommandManager globalCommandManager;
+        private EventHandler requerySuggested;
         private readonly Dictionary<Delegate, ICommand> commands;
         private int busyCounter;
+        private string status;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Presenter"/> class.
@@ -68,7 +102,24 @@
         protected Presenter()
         {
             this.commands = new Dictionary<Delegate, ICommand>();
+            this.status = DefaultStatus;
         }
+
+        event EventHandler ICommandManager.RequerySuggested
+        {
+            add => this.requerySuggested += value;
+            remove => this.requerySuggested -= value;
+        }
+
+        public static void RegisterCommandManager(ICommandManager commandManager)
+        {
+            if (globalCommandManager != null)
+                throw new InvalidOperationException();
+
+            globalCommandManager = commandManager;
+        }
+
+        internal ICommandManager CommandManager => globalCommandManager ?? this;
 
         public bool IsBusy
         {
@@ -78,14 +129,32 @@
             }
         }
 
+        public string Status
+        {
+            get => this.status;
+            private set => Set(ref this.status, value);
+        }
+
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected internal IDisposable Busy()
+        protected internal IDisposable Busy() => new BusyMonitor(this);
+
+        protected IDisposable WithStatus(string status = null) => new StatusUpdater(this, status);
+
+        protected bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
-            return new BusyMonitor(this);
+            if (EqualityComparer<T>.Default.Equals(storage, value))
+                return false;
+
+            storage = value;
+
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+            this.CommandManager.InvalidateRequerySuggested();
+
+            return true;
         }
 
         /// <summary>
@@ -151,6 +220,11 @@
         protected void RaisePropertyChanged(string propertyName = null)
         {
             OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? String.Empty));
+        }
+
+        void ICommandManager.InvalidateRequerySuggested()
+        {
+            this.requerySuggested?.Invoke(this, EventArgs.Empty);
         }
     }
 }
