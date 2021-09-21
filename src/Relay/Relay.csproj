@@ -3,6 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PackageId>RelayTk</PackageId>
+    <PackageVersion>2.0.1.0</PackageVersion>
+    <Authors>Vladislav Borovikov</Authors>
+    <Title>Relay Toolkit</Title>
+    <Description>Mediator Toolkit for .NET apps</Description>
+    <Copyright>Copyright © 2021 Vladislav Borovikov</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/vborovikov/relay</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/vborovikov/relay</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>cqrs;ui;api;mediator;mvvm</PackageTags>
+    <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
