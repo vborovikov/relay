@@ -19,14 +19,14 @@
 
         public Task ExecuteAsync<TCommand>(TCommand command) where TCommand : ICommand
         {
-            var asyncCommandHandler = GetService(typeof(IAsyncCommandHandler<TCommand>)) as IAsyncCommandHandler<TCommand>;
+            var asyncCommandHandler = GetRequestHandler(typeof(IAsyncCommandHandler<TCommand>)) as IAsyncCommandHandler<TCommand>;
             if (asyncCommandHandler != null)
             {
                 return asyncCommandHandler.ExecuteAsync(command);
             }
             else
             {
-                var commandHandler = GetService(typeof(ICommandHandler<TCommand>)) as ICommandHandler<TCommand>;
+                var commandHandler = GetRequestHandler(typeof(ICommandHandler<TCommand>)) as ICommandHandler<TCommand>;
                 if (commandHandler != null)
                 {
                     return Task.Run(delegate { commandHandler.Execute(command); });
@@ -39,7 +39,7 @@
         public Task<TResult> RunAsync<TResult>(IQuery<TResult> query)
         {
             var queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-            var queryHandler = GetService(queryHandlerType);
+            var queryHandler = GetRequestHandler(queryHandlerType);
 
             if (queryHandler != null)
             {
@@ -49,7 +49,7 @@
             else
             {
                 var asyncQueryHandlerType = typeof(IAsyncQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-                var asyncQueryHandler = GetService(asyncQueryHandlerType);
+                var asyncQueryHandler = GetRequestHandler(asyncQueryHandlerType);
 
                 if (asyncQueryHandler != null)
                 {
@@ -61,7 +61,8 @@
             return Task.FromResult(default(TResult));
         }
 
-        protected abstract object GetService(Type serviceType);
+        protected virtual object GetRequestHandler(Type requestHandlerType) =>
+            requestHandlerType.IsAssignableFrom(GetType()) ? this : null;
 
         private Task<TResult> RunAsyncInternal<TQuery, TResult>(TQuery query, IAsyncQueryHandler<TQuery, TResult> handler) where TQuery : IQuery<TResult>
         {
@@ -85,6 +86,7 @@
             this.serviceProvider = serviceProvider;
         }
 
-        protected override object GetService(Type serviceType) => this.serviceProvider.GetService(serviceType);
+        protected override object GetRequestHandler(Type requestHandlerType) =>
+            this.serviceProvider.GetService(requestHandlerType);
     }
 }

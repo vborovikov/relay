@@ -6,4 +6,4 @@
     {
         CancellationToken CancellationToken { get; }
     }
-}
+}   
