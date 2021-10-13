@@ -39,13 +39,21 @@
 
         public bool IsActive { get; private set; }
 
-        public bool IsCompleted => this.state.ProcessStatus switch
+        public bool IsCompleted
         {
-            ProcessStatus.Executed => true,
-            ProcessStatus.Compensated => true,
-            ProcessStatus.Aborted => true,
-            _ => false
-        };
+            get
+            {
+                switch (this.state.ProcessStatus)
+                {
+                    case ProcessStatus.Executed:
+                    case ProcessStatus.Compensated:
+                    case ProcessStatus.Aborted:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
 
         public event EventHandler<ProcessChangeEventArgs> Changed;
 
@@ -159,7 +167,7 @@
         protected override Task<TimeSpan> ExecuteAsync(State state)
         {
             return ResumeAsync(this.runCancelSource.Token);
-        }   
+        }
 
         protected override void DisposeManagedObjects()
         {
@@ -205,7 +213,7 @@
             }
 
             this.IsActive = false;
-            return completed || cancellationToken.IsCancellationRequested ? 
+            return completed || cancellationToken.IsCancellationRequested ?
                 Timeout.InfiniteTimeSpan : RunDelay;
         }
 

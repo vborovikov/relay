@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text.Json;
 
     public enum ProcessStatus
     {
@@ -51,19 +50,9 @@
                 this.ProcessId = Guid.NewGuid();
             }
 
-            public override string ToString()
-            {
-                return JsonSerializer.Serialize(this);
-            }
-
             public static State Create()
             {
                 return new State();
-            }
-
-            public static State FromString(string json)
-            {
-                return JsonSerializer.Deserialize<State>(json);
             }
 
             public State Clone() => (State)MemberwiseClone();
@@ -83,7 +72,7 @@
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(this.ProcessId);
+                return -506264241 + this.ProcessId.GetHashCode();
             }
 
             public static bool operator ==(State left, State right)
