@@ -38,23 +38,23 @@
 
         public Task<TResult> RunAsync<TResult>(IQuery<TResult> query)
         {
-            var queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-            var queryHandler = GetRequestHandler(queryHandlerType);
+            var asyncQueryHandlerType = typeof(IAsyncQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
+            var asyncQueryHandler = GetRequestHandler(asyncQueryHandlerType);
 
-            if (queryHandler != null)
+            if (asyncQueryHandler != null)
             {
-                var method = this.runMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
-                return Task.Run(() => (TResult)method.Invoke(this, new[] { query, queryHandler }));
+                var asyncMethod = this.runAsyncMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
+                return (Task<TResult>)asyncMethod.Invoke(this, new[] { query, asyncQueryHandler });
             }
             else
             {
-                var asyncQueryHandlerType = typeof(IAsyncQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-                var asyncQueryHandler = GetRequestHandler(asyncQueryHandlerType);
+                var queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
+                var queryHandler = GetRequestHandler(queryHandlerType);
 
-                if (asyncQueryHandler != null)
+                if (queryHandler != null)
                 {
-                    var asyncMethod = this.runAsyncMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
-                    return ((Task<TResult>)asyncMethod.Invoke(this, new[] { query, asyncQueryHandler }));
+                    var method = this.runMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
+                    return Task.Run(() => (TResult)method.Invoke(this, new[] { query, queryHandler }));
                 }
             }
 
