@@ -217,9 +217,11 @@
         /// Raises the <see cref="E:PropertyChanged"/> event.
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>
-        protected void RaisePropertyChanged(string propertyName = null)
+        /// <returns>Always <c>true</c>.</returns>
+        protected bool RaisePropertyChanged(string propertyName = null)
         {
             OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? String.Empty));
+            return true;
         }
 
         void ICommandManager.InvalidateRequerySuggested()
