@@ -7,12 +7,10 @@
     public abstract class DefaultRequestDispatcherBase : IRequestDispatcher
     {
         private readonly MethodInfo runAsyncMethod;
-        private readonly MethodInfo runMethod;
 
         protected DefaultRequestDispatcherBase()
         {
-            this.runMethod = typeof(DefaultRequestDispatcherBase).GetTypeInfo().GetDeclaredMethod(nameof(RunInternal));
-            this.runAsyncMethod = typeof(DefaultRequestDispatcherBase).GetTypeInfo().GetDeclaredMethod(nameof(RunAsyncInternal));
+            this.runAsyncMethod = typeof(DefaultRequestDispatcherBase).GetMethod(nameof(RunInternalAsync), BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         public override string ToString() => "Request";
@@ -33,47 +31,34 @@
                 }
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task<TResult> RunAsync<TResult>(IQuery<TResult> query)
         {
-            var asyncQueryHandlerType = typeof(IAsyncQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-            var asyncQueryHandler = GetRequestHandler(asyncQueryHandlerType);
+            var runAsyncGenericMethod = this.runAsyncMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
+            return (Task<TResult>)runAsyncGenericMethod.Invoke(this, new[] { query });
+        }
 
+        protected virtual object GetRequestHandler(Type requestHandlerType) => this;
+
+        private Task<TResult> RunInternalAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
+        {
+            var asyncQueryHandler = GetRequestHandler(typeof(IAsyncQueryHandler<TQuery, TResult>)) as IAsyncQueryHandler<TQuery, TResult>;
             if (asyncQueryHandler != null)
             {
-                var asyncMethod = this.runAsyncMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
-                return (Task<TResult>)asyncMethod.Invoke(this, new[] { query, asyncQueryHandler });
+                return asyncQueryHandler.RunAsync(query);
             }
             else
             {
-                var queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-                var queryHandler = GetRequestHandler(queryHandlerType);
-
+                var queryHandler = GetRequestHandler(typeof(IQueryHandler<TQuery, TResult>)) as IQueryHandler<TQuery, TResult>;
                 if (queryHandler != null)
                 {
-                    var method = this.runMethod.MakeGenericMethod(query.GetType(), typeof(TResult));
-                    return Task.Run(() => (TResult)method.Invoke(this, new[] { query, queryHandler }));
+                    return Task.Run(() => queryHandler.Run(query));
                 }
             }
 
             return Task.FromResult(default(TResult));
-        }
-
-        protected virtual object GetRequestHandler(Type requestHandlerType) =>
-            requestHandlerType.IsAssignableFrom(GetType()) ? this : null;
-
-        private Task<TResult> RunAsyncInternal<TQuery, TResult>(TQuery query, IAsyncQueryHandler<TQuery, TResult> handler) where TQuery : IQuery<TResult>
-        {
-            var resultTask = handler.RunAsync(query);
-            return resultTask;
-        }
-
-        private TResult RunInternal<TQuery, TResult>(TQuery query, IQueryHandler<TQuery, TResult> handler) where TQuery : IQuery<TResult>
-        {
-            var result = handler.Run(query);
-            return result;
         }
     }
 
