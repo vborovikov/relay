@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -11,7 +10,7 @@
     /// <summary>
     /// Abstracts the View and serves in data binding between the View and the Model.
     /// </summary>
-    public abstract class Presenter : INotifyPropertyChanged, ICommandManager
+    public abstract class Presenter : PresenterBase, ICommandManager
     {
         private abstract class PresenterHelper : IDisposable
         {
@@ -141,27 +140,9 @@
             private set => Set(ref this.status, value);
         }
 
-        /// <summary>
-        /// Occurs when a property value changes.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
         protected internal IDisposable Busy() => new BusyMonitor(this);
 
         protected IDisposable WithStatus(string status = null) => new StatusUpdater(this, status);
-
-        protected bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(storage, value))
-                return false;
-
-            storage = value;
-
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
-            this.CommandManager.InvalidateRequerySuggested();
-
-            return true;
-        }
 
         /// <summary>
         /// Gets the <see cref="ICommand"/> for the specified <see cref="Func{Task}"/> delegate.
@@ -210,24 +191,15 @@
             return new PresenterCommand<T>(this, execute, canExecute);
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:PropertyChanged"/> event.
-        /// </summary>
-        /// <param name="args">The <see cref="System.ComponentModel.PropertyChangedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnPropertyChanged(PropertyChangedEventArgs args)
+        protected sealed override bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
-            this.PropertyChanged?.Invoke(this, args);
-        }
+            if (base.Set(ref storage, value, propertyName))
+            {
+                this.CommandManager.InvalidateRequerySuggested();
+                return true;
+            }
 
-        /// <summary>
-        /// Raises the <see cref="E:PropertyChanged"/> event.
-        /// </summary>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <returns>Always <c>true</c>.</returns>
-        protected bool RaisePropertyChanged(string propertyName = null)
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? String.Empty));
-            return true;
+            return false;
         }
 
         void ICommandManager.InvalidateRequerySuggested()
