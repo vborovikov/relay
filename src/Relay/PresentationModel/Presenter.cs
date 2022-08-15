@@ -84,7 +84,7 @@
 
             protected override void OnDispose()
             {
-                this.presenter.Status = DefaultStatus;
+                this.presenter.Status = this.presenter.initialStatus;
             }
         }
 
@@ -94,15 +94,21 @@
         private EventHandler requerySuggested;
         private readonly Dictionary<Delegate, ICommand> commands;
         private int busyCounter;
+        private readonly string initialStatus;
         private string status;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Presenter"/> class.
         /// </summary>
-        protected Presenter()
+        protected Presenter() : this(DefaultStatus) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Presenter"/> class.
+        /// </summary>
+        protected Presenter(string initialStatus)
         {
             this.commands = new Dictionary<Delegate, ICommand>();
-            this.status = DefaultStatus;
+            this.initialStatus = this.status = initialStatus ?? throw new ArgumentNullException(nameof(initialStatus));
         }
 
         event EventHandler ICommandManager.RequerySuggested
