@@ -32,7 +32,7 @@
         /// <param name="dispatcher">The request dispatcher to use.</param>
         /// <param name="command">The generic command to execute.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public static Task ExecuteNonGenericAsync(this IRequestDispatcher dispatcher, ICommand command)
+        public static Task ExecuteGenericAsync(this IRequestDispatcher dispatcher, ICommand command)
         {
             var method = executeAsyncMethod.MakeGenericMethod(command.GetType());
             return (Task)method.Invoke(dispatcher, new[] { command });
@@ -44,7 +44,7 @@
         /// <param name="dispatcher">The request dispatcher to use.</param>
         /// <param name="query">The generic query to execute.</param>
         /// <returns>A task representing the asynchronous operation that returns the result of the query as an object.</returns>
-        public static async Task<object> RunNonGenericAsync(this IRequestDispatcher dispatcher, IQuery query)
+        public static async Task<object> RunGenericAsync(this IRequestDispatcher dispatcher, IQuery query)
         {
             var method = runAsyncMethod.MakeGenericMethod(FindGenericArgument(query.GetType()));
             var queryTask = (Task)method.Invoke(dispatcher, new[] { query });
