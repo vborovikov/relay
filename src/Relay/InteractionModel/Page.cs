@@ -79,12 +79,26 @@
         }
     }
 
+    /// <summary>
+    /// Provides static methods for working with paged collections of items.
+    /// </summary>
     public static class Page
     {
+        /// <summary>
+        /// The number of the first page.
+        /// </summary>
         public const int FirstPageNumber = 1;
 
+        /// <summary>
+        /// The available page sizes that can be used to limit the number of items in a page.
+        /// </summary>
         public static readonly int[] AvailablePageSizes = { 10, 25, 50, 100, 200 };
 
+        /// <summary>
+        /// Returns the number of the current page based on the <paramref name="page"/> properties.
+        /// </summary>
+        /// <param name="page">The page to calculate the number for.</param>
+        /// <returns>The number of the current page.</returns>
         public static int GetPageNumber(this IPage page)
         {
             if (page.TakeCount > 0)
@@ -93,11 +107,21 @@
             return FirstPageNumber;
         }
 
+        /// <summary>
+        /// Returns the size of the page based on the <paramref name="range"/> properties.
+        /// </summary>
+        /// <param name="range">The range to calculate the page size for.</param>
+        /// <returns>The size of the page.</returns>
         public static int GetPageSize(this IPage range)
         {
             return NormalizePageSize(range.TakeCount);
         }
 
+        /// <summary>
+        /// Normalizes the specified page size to the nearest available page size.
+        /// </summary>
+        /// <param name="pageSize">The page size to normalize.</param>
+        /// <returns>The normalized page size.</returns>
         public static int NormalizePageSize(int? pageSize)
         {
             if (pageSize == null)
@@ -106,6 +130,15 @@
             return AvailablePageSizes.Aggregate((x, y) => Math.Abs(x - pageSize.Value) < Math.Abs(y - pageSize.Value) ? x : y);
         }
 
+        /// <summary>
+        /// Returns a page of items from the specified <paramref name="source"/> sequence
+        /// based on the specified <paramref name="page"/> properties and filter function.
+        /// </summary>
+        /// <typeparam name="TSource">The type of items in the source sequence.</typeparam>
+        /// <param name="source">The source sequence to page.</param>
+        /// <param name="filter">The filter function to apply to the source sequence.</param>
+        /// <param name="page">The page properties to apply to the source sequence.</param>
+        /// <returns>The paged and filtered sequence of items.</returns>
         public static IPage<TSource> ToPage<TSource>(this IEnumerable<TSource> source, Func<TSource, string, bool> filter, IPage page)
         {
             var filteredSource = source;
@@ -131,6 +164,15 @@
             return From(sample, totalCount, filterCount, page);
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="Page{T}"/> class from
+        /// the specified <paramref name="items"/>, total count, filter count, and page properties.
+        /// </summary>
+        /// <param name="items">The items to include in the page.</param>
+        /// <param name="totalCount">The total number of items in the source sequence.</param>
+        /// <param name="filterCount">The number of items in the filtered source sequence.</param>
+        /// <param name="page">The page properties that were applied to the items.</param>
+        /// <returns>A new instance of the <see cref="IPage{T}"/> containing the specified items.</returns>
         public static IPage<T> From<T>(IEnumerable<T> items, int totalCount, int filterCount, IPage page)
         {
             if (page != null)
@@ -139,6 +181,11 @@
             return new SinglePage<T>(items);
         }
 
+        /// <summary>
+        /// Returns an empty page of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of items in the page.</typeparam>
+        /// <returns>An empty page of the specified type.</returns>
         public static IPage<T> Empty<T>() => Page<T>.Empty;
     }
 }

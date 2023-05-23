@@ -2,12 +2,24 @@
 {
     using System.Linq;
 
+    /// <summary>
+    /// Represents a response that contains a page of items of type <typeparamref name="T"/>, along with metadata about the page.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the page.</typeparam>
     public class PageResponse<T> : IPage
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageResponse{T}"/> class with default values.
+        /// </summary>
         public PageResponse()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageResponse{T}"/> class with the specified items and page metadata.
+        /// </summary>
+        /// <param name="items">The items in the page.</param>
+        /// <param name="page">The metadata for the page.</param>
         public PageResponse(T[] items, IPage page)
         {
             this.Items = items;
@@ -19,46 +31,99 @@
             this.Sort = page.Sort;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageResponse{T}"/> class with the specified items and page request metadata.
+        /// </summary>
+        /// <param name="items">The items in the page.</param>
+        /// <param name="page">The request metadata for the page.</param>
         public PageResponse(T[] items, PageRequest page) : this(items, (IPage)page)
         {
             this.PageNumber = page.P;
             this.PageSize = page.Ps;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageResponse{T}"/> class with the specified page metadata.
+        /// </summary>
+        /// <param name="page">The metadata for the page.</param>
         public PageResponse(IPage<T> page) : this(page.ToArray(), page)
         {
             this.TotalCount = page.TotalCount;
             this.FilterCount = page.FilterCount;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageResponse{T}"/> class with the specified items and page request metadata.
+        /// </summary>
+        /// <param name="page">The request metadata for the page.</param>
+        /// <param name="request">The request metadata for the page.</param>
         public PageResponse(IPage<T> page, PageRequest request) : this(page.ToArray(), request)
         {
             this.TotalCount = page.TotalCount;
             this.FilterCount = page.FilterCount;
         }
 
-        public T[] Items { get; set; }
+        /// <summary>
+        /// Gets the items in the page.
+        /// </summary>
+        public T[] Items { get; }
 
-        public int TotalCount { get; set; }
+        /// <summary>
+        /// Gets the total number of items in the source sequence.
+        /// </summary>
+        public int TotalCount { get; }
 
-        public int FilterCount { get; set; }
+        /// <summary>
+        /// Gets the number of items in the filtered source sequence.
+        /// </summary>
+        public int FilterCount { get; }
 
-        public int SkipCount { get; set; }
+        /// <summary>
+        /// Gets the number of items to skip from the beginning of the collection.
+        /// </summary>
+        public int SkipCount { get; }
 
-        public int TakeCount { get; set; }
+        /// <summary>
+        /// Gets the maximum number of items to return in the page.
+        /// </summary>
+        public int TakeCount { get; }
 
-        public int Count { get; set; }
+        /// <summary>
+        /// Gets or sets the number of items in the page.
+        /// </summary>
+        public int Count { get; }
 
-        public int? PageNumber { get; set; }
+        /// <summary>
+        /// Gets the number of the current page.
+        /// </summary>
+        public int? PageNumber { get; }
 
-        public int? PageSize { get; set; }
+        /// <summary>
+        /// Gets the maximum number of items to return on a page.
+        /// </summary>
+        public int? PageSize { get; }
 
-        public string Search { get; set; }
+        /// <summary>
+        /// Gets the search query to use when filtering the collection.
+        /// </summary>
+        public string Search { get; }
 
-        public string Filter { get; set; }
+        /// <summary>
+        /// Gets the filter query to use when filtering the collection.
+        /// </summary>
+        public string Filter { get; }
 
-        public string Sort { get; set; }
+        /// <summary>
+        /// Gets the sort query to use when sorting the collection.
+        /// </summary>
+        public string Sort { get; }
 
+        /// <summary>
+        /// Returns a new instance of the <see cref="Page{T}"/> class 
+        /// containing the items and metadata from this <see cref="PageResponse{T}"/> instance.
+        /// </summary>
+        /// <returns>A new instance of the <see cref="Page{T}"/> class
+        /// containing the items and metadata from this <see cref="PageResponse{T}"/> instance.</returns>
         public IPage<T> ToPage() => 
             Page.From(this.Items, this.TotalCount, this.FilterCount, this);
     }
