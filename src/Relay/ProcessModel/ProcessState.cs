@@ -1,89 +1,133 @@
-﻿namespace Relay.ProcessModel
+﻿namespace Relay.ProcessModel;
+
+using System;
+using System.Collections.Generic;
+
+/// <summary>
+/// Represents the possible statuses of a process.
+/// </summary>
+public enum ProcessStatus
 {
-    using System;
-    using System.Collections.Generic;
+    /// <summary>
+    /// This process has not yet been registered and begun executing.
+    /// </summary>
+    NotStarted,
+    /// <summary>
+    /// This process is currently executing (moving forward).
+    /// </summary>
+    Executing,
+    /// <summary>
+    /// This process has completed successfully.
+    /// </summary>
+    Executed,
+    /// <summary>
+    /// This process is currently compensating after a execution failure (moving backward).
+    /// </summary>
+    Compensating,
+    /// <summary>
+    /// This process has completed compensating after a failure.
+    /// </summary>
+    Compensated,
+    /// <summary>
+    /// This process has completed compensating after an abort.
+    /// </summary>
+    Aborted
+}
 
-    public enum ProcessStatus
+public partial class Process
+{
+    /// <summary>
+    /// Represents a process state.
+    /// </summary>
+    public sealed class State : ICloneable, IEquatable<State>
     {
         /// <summary>
-        /// This process has not yet been registered and begun executing.
+        /// Gets the unique identifier of the process.
         /// </summary>
-        NotStarted,
-        /// <summary>
-        /// This process is currently executing (moving forward).
-        /// </summary>
-        Executing,
-        /// <summary>
-        /// This process has completed successfully.
-        /// </summary>
-        Executed,
-        /// <summary>
-        /// This process is currently compensating after a execution failure (moving backward).
-        /// </summary>
-        Compensating,
-        /// <summary>
-        /// This process has completed compensating after a failure.
-        /// </summary>
-        Compensated,
-        /// <summary>
-        /// This process has completed compensating after an abort.
-        /// </summary>
-        Aborted
-    }
+        public Guid ProcessId { get; private set; }
 
-    public partial class Process
-    {
-        public class State : ICloneable, IEquatable<State>
+        /// <summary>
+        /// Gets or sets the status of the process.
+        /// </summary>
+        public ProcessStatus ProcessStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of activities that have been completed.
+        /// </summary>
+        public int CompletedActivityCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the activity being compensated.
+        /// </summary>
+        public int CompensationIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exception that occurred during process execution.
+        /// </summary>
+        public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="State"/> class.
+        /// </summary>
+        private State()
         {
-            public Guid ProcessId { get; private set; }
+            this.ProcessId = Guid.NewGuid();
+        }
 
-            public ProcessStatus ProcessStatus { get; set; }
+        /// <summary>
+        /// Creates a new instance of the <see cref="State"/> class.
+        /// </summary>
+        public static State Create()
+        {
+            return new State();
+        }
 
-            public int CompletedActivityCount { get; set; }
+        /// <summary>
+        /// Creates a new instance of the <see cref="State"/> class that is a copy of the current instance.
+        /// </summary>
+        public State Clone() => (State)MemberwiseClone();
 
-            public int CompensationIndex { get; set; }
+        object ICloneable.Clone() => Clone();
 
-            public Exception Exception { get; set; }
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as State);
+        }
 
-            private State()
-            {
-                this.ProcessId = Guid.NewGuid();
-            }
+        /// <inheritdoc />
+        public bool Equals(State other)
+        {
+            return other != null &&
+                   this.ProcessId.Equals(other.ProcessId);
+        }
 
-            public static State Create()
-            {
-                return new State();
-            }
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return -506264241 + this.ProcessId.GetHashCode();
+        }
 
-            public State Clone() => (State)MemberwiseClone();
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="State"/> objects are equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns><c>true</c> if a and b are equal; otherwise, <c>false</c>.</returns>
+        public static bool operator ==(State left, State right)
+        {
+            return EqualityComparer<State>.Default.Equals(left, right);
+        }
 
-            object ICloneable.Clone() => Clone();
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as State);
-            }
-
-            public bool Equals(State other)
-            {
-                return other != null &&
-                       this.ProcessId.Equals(other.ProcessId);
-            }
-
-            public override int GetHashCode()
-            {
-                return -506264241 + this.ProcessId.GetHashCode();
-            }
-
-            public static bool operator ==(State left, State right)
-            {
-                return EqualityComparer<State>.Default.Equals(left, right);
-            }
-
-            public static bool operator !=(State left, State right)
-            {
-                return !(left == right);
-            }
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="State"/> objects are not equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns><c>true</c> if a and b are not equal; otherwise, <c>false</c>.</returns>
+        public static bool operator !=(State left, State right)
+        {
+            return !(left == right);
         }
     }
 }
