@@ -162,7 +162,7 @@ public abstract class Executive<TState> : IDisposable
     private bool isDisposed = false; // To detect redundant calls
 
     /// <summary>
-    /// Disposes of the resources used by the <see cref="Executive{TState}"/>
+    /// Disposes the resources used by the <see cref="Executive{TState}"/>
     /// </summary>
     /// <param name="disposing"><c>true</c> if the object is being disposed; otherwise, <c>false</c>.</param>
     protected void Dispose(bool disposing)
@@ -179,6 +179,9 @@ public abstract class Executive<TState> : IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the managed resources used by the <see cref="Executive{TState}"/>
+    /// </summary>
     protected virtual void DisposeManagedObjects()
     {
     }
