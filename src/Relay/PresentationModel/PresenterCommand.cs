@@ -71,6 +71,10 @@
             }
         }
 
+        /// <summary>
+        /// Called when the command state changes.
+        /// </summary>
+        /// <param name="e"></param>
         protected virtual void OnCanExecuteChanged(EventArgs e)
         {
             this.presenter.CommandManager.InvalidateRequerySuggested();
