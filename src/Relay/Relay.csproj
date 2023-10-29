@@ -3,19 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>11</LangVersion>
-    <VersionPrefix>2.4.0.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
+    <Title>Relay Toolkit</Title>
+    <Description>Mediator Toolkit for .NET apps</Description>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Vladislav Borovikov</Authors>
-    <Copyright>Copyright © 2023 Vladislav Borovikov</Copyright>
-    <Title>Relay Toolkit</Title>
-    <Product>$(Title)</Product>
-    <Description>Mediator Toolkit for .NET apps</Description>
-    <AssemblyTitle>$(Description)</AssemblyTitle>
     <PackageId>RelayTk</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/vborovikov/relay</PackageProjectUrl>
@@ -23,8 +16,8 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>cqrs;ui;api;mediator;mvvm</PackageTags>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
