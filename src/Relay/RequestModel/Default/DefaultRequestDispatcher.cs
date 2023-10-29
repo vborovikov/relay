@@ -45,7 +45,7 @@
                 }
             }
 
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -83,7 +83,7 @@
                 }
             }
 
-            return Task.FromResult(default(TResult));
+            throw new NotImplementedException();
         }
     }
 
