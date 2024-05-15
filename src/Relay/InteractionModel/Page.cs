@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class Page<T> : IPage<T>
+    sealed class Page<T> : IPage<T>
     {
         public static readonly IPage<T> Empty = new Page<T>(Array.Empty<T>(), 0, 0, null);
 
@@ -19,6 +19,16 @@
             this.Count = items.Count();
             this.TotalCount = totalCount;
             this.FilterCount = filterCount;
+        }
+
+        public Page(IEnumerable<T> items, IPage page)
+        {
+            this.items = items;
+            this.page = page;
+            var count = items.Count();
+            this.Count = count;
+            this.TotalCount = count;
+            this.FilterCount = count;
         }
 
         public int Count { get; }
@@ -42,7 +52,7 @@
         IEnumerator IEnumerable.GetEnumerator() => this.items.GetEnumerator();
     }
 
-    internal class SinglePage<T> : IPage<T>
+    sealed class SinglePage<T> : IPage<T>
     {
         private readonly IEnumerable<T> items;
 
@@ -165,8 +175,8 @@
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="Page{T}"/> class from
-        /// the specified <paramref name="items"/>, total count, filter count, and page properties.
+        /// Returns a page of items from the specified <paramref name="items"/>,
+        /// total count, filter count, and page properties.
         /// </summary>
         /// <param name="items">The items to include in the page.</param>
         /// <param name="totalCount">The total number of items in the source sequence.</param>
@@ -179,6 +189,18 @@
                 return new Page<T>(items, totalCount, filterCount, page);
 
             return new SinglePage<T>(items);
+        }
+
+        /// <summary>
+        /// Returns a page of items from the specified <paramref name="items"/>,
+        /// total count, filter count, and page properties.
+        /// </summary>
+        /// <param name="items">The items to include in the page.</param>
+        /// <param name="page">The page properties that were applied to the items.</param>
+        /// <returns>A new instance of the <see cref="IPage{T}"/> containing the specified items.</returns>
+        public static IPage<T> From<T>(IEnumerable<T> items, IPage page)
+        {
+            return new Page<T>(items, page);
         }
 
         /// <summary>
