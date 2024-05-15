@@ -94,6 +94,8 @@
     /// </summary>
     public static class Page
     {
+        private static int[] availablePageSizes = { 10, 25, 50, 100, 200 };
+
         /// <summary>
         /// The number of the first page.
         /// </summary>
@@ -102,7 +104,25 @@
         /// <summary>
         /// The available page sizes that can be used to limit the number of items in a page.
         /// </summary>
-        public static readonly int[] AvailablePageSizes = { 10, 25, 50, 100, 200 };
+        public static IReadOnlyList<int> AvailablePageSizes => availablePageSizes;
+
+        /// <summary>
+        /// Initializes the available page sizes.
+        /// </summary>
+        /// <param name="pageSizes">The available page sizes.</param>
+        /// <exception cref="ArgumentException">The <paramref name="pageSizes"/> are not unique.</exception>
+        public static void Initialize(params int[] pageSizes)
+        {
+            if (pageSizes.Length == 0)
+                throw new ArgumentException("Page sizes cannot be empty.", nameof(pageSizes));
+
+            var sortedPageSizes = pageSizes.Distinct().ToArray();
+            if (sortedPageSizes.Length < pageSizes.Length)
+                throw new ArgumentException("Page sizes must be unique.", nameof(pageSizes));
+
+            Array.Sort(sortedPageSizes);    
+            availablePageSizes = sortedPageSizes;
+        }
 
         /// <summary>
         /// Returns the number of the current page based on the <paramref name="page"/> properties.
@@ -135,7 +155,7 @@
         public static int NormalizePageSize(int? pageSize)
         {
             if (pageSize == null)
-                return AvailablePageSizes.Min();
+                return AvailablePageSizes[0];
 
             return AvailablePageSizes.Aggregate((x, y) => Math.Abs(x - pageSize.Value) < Math.Abs(y - pageSize.Value) ? x : y);
         }
