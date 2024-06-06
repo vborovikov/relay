@@ -14,7 +14,6 @@
         public PageRequest()
         {
             this.P = Page.FirstPageNumber;
-            this.Ps = Page.NormalizePageSize(null);
         }
 
         /// <summary>
