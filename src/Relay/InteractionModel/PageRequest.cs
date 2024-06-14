@@ -24,7 +24,7 @@
         public PageRequest(IPage page)
         {
             this.P = page.GetPageNumber();
-            this.Ps = NormalizePageSize(page.TakeCount);
+            this.Ps = NormalizePageSizeOverride(page.TakeCount);
             this.Q = page.Search;
             this.F = page.Filter;
             this.S = page.Sort;
@@ -55,9 +55,9 @@
         /// </summary>
         public string S { get; set; }
 
-        int IPage.SkipCount => (Math.Max(Page.FirstPageNumber, this.P ?? Page.FirstPageNumber) - 1) * NormalizePageSize(this.Ps);
+        int IPage.SkipCount => (Math.Max(Page.FirstPageNumber, this.P ?? Page.FirstPageNumber) - 1) * NormalizePageSizeOverride(this.Ps);
 
-        int IPage.TakeCount => NormalizePageSize(this.Ps);
+        int IPage.TakeCount => NormalizePageSizeOverride(this.Ps);
 
         string IPage.Search => this.Q;
 
@@ -69,7 +69,7 @@
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append($"?p={this.GetPageNumber()}&ps={NormalizePageSize(this.Ps)}");
+            sb.Append($"?p={this.GetPageNumber()}&ps={NormalizePageSizeOverride(this.Ps)}");
             
             if (!string.IsNullOrWhiteSpace(this.Q))
             {
@@ -92,7 +92,7 @@
         /// </summary>
         /// <param name="pageSize">The page size to normalize.</param>
         /// <returns>The normalized page size.</returns>
-        protected virtual int NormalizePageSize(int? pageSize)
+        protected virtual int NormalizePageSizeOverride(int? pageSize)
         {
             return Page.NormalizePageSize(pageSize);
         }
