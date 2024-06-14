@@ -1,6 +1,7 @@
 ﻿namespace Relay.InteractionModel
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Represents a request to filter, sort, and limit a collection of items with a specific page size, search query,
@@ -23,7 +24,7 @@
         public PageRequest(IPage page)
         {
             this.P = page.GetPageNumber();
-            this.Ps = page.GetPageSize();
+            this.Ps = NormalizePageSize(page.TakeCount);
             this.Q = page.Search;
             this.F = page.Filter;
             this.S = page.Sort;
@@ -54,14 +55,46 @@
         /// </summary>
         public string S { get; set; }
 
-        int IPage.SkipCount => (Math.Max(Page.FirstPageNumber, this.P ?? Page.FirstPageNumber) - 1) * Page.NormalizePageSize(this.Ps);
+        int IPage.SkipCount => (Math.Max(Page.FirstPageNumber, this.P ?? Page.FirstPageNumber) - 1) * NormalizePageSize(this.Ps);
 
-        int IPage.TakeCount => Page.NormalizePageSize(this.Ps);
+        int IPage.TakeCount => NormalizePageSize(this.Ps);
 
         string IPage.Search => this.Q;
 
         string IPage.Filter => this.F;
 
         string IPage.Sort => this.S;
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append($"?p={this.GetPageNumber()}&ps={NormalizePageSize(this.Ps)}");
+            
+            if (!string.IsNullOrWhiteSpace(this.Q))
+            {
+                sb.Append($"&q={Uri.EscapeDataString(this.Q)}");
+            }
+            if (!string.IsNullOrWhiteSpace(this.F))
+            {
+                sb.Append($"&f={Uri.EscapeDataString(this.F)}");
+            }
+            if (!string.IsNullOrWhiteSpace(this.S))
+            {
+                sb.Append($"&s={Uri.EscapeDataString(this.S)}");
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Normalizes the specified page size to the nearest available page size.
+        /// </summary>
+        /// <param name="pageSize">The page size to normalize.</param>
+        /// <returns>The normalized page size.</returns>
+        protected virtual int NormalizePageSize(int? pageSize)
+        {
+            return Page.NormalizePageSize(pageSize);
+        }
     }
 }
