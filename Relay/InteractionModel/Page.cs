@@ -7,7 +7,7 @@
 
     sealed class Page<T> : IPage<T>
     {
-        public static readonly IPage<T> Empty = new Page<T>(Array.Empty<T>(), 0, 0, null);
+        public static readonly IPage<T> Empty = new Page<T>(Array.Empty<T>(), 0, 0, new SinglePage<T>(Array.Empty<T>()));
 
         private readonly IEnumerable<T> items;
         private readonly IPage page;
@@ -41,11 +41,11 @@
 
         public int TakeCount => this.page.TakeCount;
 
-        public string Search => this.page.Search;
+        public string? Search => this.page.Search;
 
-        public string Filter => this.page.Filter;
+        public string? Filter => this.page.Filter;
 
-        public string Sort => this.page.Sort;
+        public string? Sort => this.page.Sort;
 
         public IEnumerator<T> GetEnumerator() => this.items.GetEnumerator();
 
@@ -72,11 +72,11 @@
 
         public int TakeCount => this.Count;
 
-        public string Search => null;
+        public string? Search => null;
 
-        public string Filter => null;
+        public string? Filter => null;
 
-        public string Sort => null;
+        public string? Sort => null;
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -169,12 +169,12 @@
         /// <param name="filter">The filter function to apply to the source sequence.</param>
         /// <param name="page">The page properties to apply to the source sequence.</param>
         /// <returns>The paged and filtered sequence of items.</returns>
-        public static IPage<TSource> ToPage<TSource>(this IEnumerable<TSource> source, Func<TSource, string, bool> filter, IPage page)
+        public static IPage<TSource> ToPage<TSource>(this IEnumerable<TSource> source, Func<TSource, string?, bool> filter, IPage? page)
         {
             var filteredSource = source;
             var totalCount = -1;
             var filterCount = -1;
-            if (page != null)
+            if (page is not null)
             {
                 // 1. Count items
                 filterCount = totalCount = source.Count();
@@ -203,9 +203,9 @@
         /// <param name="filterCount">The number of items in the filtered source sequence.</param>
         /// <param name="page">The page properties that were applied to the items.</param>
         /// <returns>A new instance of the <see cref="IPage{T}"/> containing the specified items.</returns>
-        public static IPage<T> From<T>(IEnumerable<T> items, int totalCount, int filterCount, IPage page)
+        public static IPage<T> From<T>(IEnumerable<T> items, int totalCount, int filterCount, IPage? page)
         {
-            if (page != null)
+            if (page is not null)
                 return new Page<T>(items, totalCount, filterCount, page);
 
             return new SinglePage<T>(items);
@@ -218,9 +218,12 @@
         /// <param name="items">The items to include in the page.</param>
         /// <param name="page">The page properties that were applied to the items.</param>
         /// <returns>A new instance of the <see cref="IPage{T}"/> containing the specified items.</returns>
-        public static IPage<T> From<T>(IEnumerable<T> items, IPage page)
+        public static IPage<T> From<T>(IEnumerable<T> items, IPage? page)
         {
-            return new Page<T>(items, page);
+            if (page is not null)
+                return new Page<T>(items, page);
+
+            return new SinglePage<T>(items);
         }
 
         /// <summary>

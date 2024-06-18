@@ -1,5 +1,6 @@
 ﻿namespace Relay.InteractionModel
 {
+    using System;
     using System.Linq;
 
     /// <summary>
@@ -13,6 +14,7 @@
         /// </summary>
         public PageResponse()
         {
+            this.Items = Array.Empty<T>();
         }
 
         /// <summary>
@@ -106,17 +108,17 @@
         /// <summary>
         /// Gets the search query to use when filtering the collection.
         /// </summary>
-        public string Search { get; }
+        public string? Search { get; }
 
         /// <summary>
         /// Gets the filter query to use when filtering the collection.
         /// </summary>
-        public string Filter { get; }
+        public string? Filter { get; }
 
         /// <summary>
         /// Gets the sort query to use when sorting the collection.
         /// </summary>
-        public string Sort { get; }
+        public string? Sort { get; }
 
         /// <summary>
         /// Returns a new instance of the <see cref="Page{T}"/> class 

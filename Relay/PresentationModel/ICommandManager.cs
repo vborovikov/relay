@@ -11,7 +11,7 @@
         /// <summary>
         /// Raised when <see cref="ICommand.CanExecute(object)">CanExecute</see> should be requeried on commands.
         /// </summary>
-        event EventHandler RequerySuggested;
+        event EventHandler? RequerySuggested;
 
         /// <summary>
         /// Invokes <see cref="RequerySuggested"/> listeners registered on the current thread.

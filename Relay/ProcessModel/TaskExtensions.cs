@@ -14,7 +14,7 @@ static class TaskExtensions
         if (task == null) throw new ArgumentNullException(nameof(task));
         if (next == null) throw new ArgumentNullException(nameof(next));
 
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource<object?>();
         task.ContinueWith(delegate
         {
             if (task.IsFaulted) tcs.TrySetException(task.Exception.InnerExceptions);

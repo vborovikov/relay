@@ -20,17 +20,17 @@
         /// <summary>
         /// Gets the search query to use when filtering the collection.
         /// </summary>
-        string Search { get; }
+        string? Search { get; }
 
         /// <summary>
         /// Gets the filter query to use when filtering the collection.
         /// </summary>
-        string Filter { get; }
+        string? Filter { get; }
 
         /// <summary>
         /// Gets the sort query to use when sorting the collection.
         /// </summary>
-        string Sort { get; }
+        string? Sort { get; }
     }
 
     /// <summary>

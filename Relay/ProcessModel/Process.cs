@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,9 +36,9 @@ public partial class Process : Executive<Process.State>
     private readonly State state;
     private readonly IList<IActivity> activities;
 
-    private CancellationTokenSource runCancelSource;
-    private TaskCompletionSource<State> runTaskSource;
-    private TaskCompletionSource<State> startTaskSource;
+    private CancellationTokenSource? runCancelSource;
+    private TaskCompletionSource<State>? runTaskSource;
+    private TaskCompletionSource<State>? startTaskSource;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Process"/> class.
@@ -78,7 +79,7 @@ public partial class Process : Executive<Process.State>
     /// <summary>
     /// Occurs when the process state changes.
     /// </summary>
-    public event EventHandler<ProcessChangeEventArgs> Changed;
+    public event EventHandler<ProcessChangeEventArgs>? Changed;
 
     /// <summary>
     /// Gets the task that represents the execution of the process.
@@ -92,7 +93,7 @@ public partial class Process : Executive<Process.State>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public Task RunAsync(CancellationToken cancellationToken)
     {
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource<object?>();
         CancellationTokenRegistration? cancelTokenReg = null;
         cancelTokenReg = cancellationToken.Register(async delegate
         {
@@ -127,6 +128,7 @@ public partial class Process : Executive<Process.State>
     /// Starts the process asynchronously.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    [MemberNotNull(nameof(runCancelSource), nameof(runTaskSource), nameof(startTaskSource))]
     public Task<State> StartAsync()
     {
         EnsureNotCompleted();
@@ -147,7 +149,7 @@ public partial class Process : Executive<Process.State>
     /// </summary>
     protected override void OnStarted()
     {
-        this.startTaskSource.TrySetResult(this.state.Clone());
+        this.startTaskSource!.TrySetResult(this.state.Clone());
     }
 
     /// <summary>
@@ -155,7 +157,7 @@ public partial class Process : Executive<Process.State>
     /// </summary>
     protected override void OnStopped()
     {
-        if (!this.runTaskSource.TrySetResult(this.state.Clone()))
+        if (!this.runTaskSource!.TrySetResult(this.state.Clone()))
         {
             this.state.ProcessStatus = ProcessStatus.Aborted;
         }
@@ -173,12 +175,9 @@ public partial class Process : Executive<Process.State>
         //if (this.Status == ProcessStatus.NotStarted)
         //    throw new InvalidOperationException();
 
-        if (this.runCancelSource != null)
-        {
-            this.runCancelSource.Cancel();
-        }
+        this.runCancelSource?.Cancel();
 
-        return this.runTaskSource.Task;
+        return this.runTaskSource!.Task;
     }
 
     /// <summary>
@@ -189,8 +188,8 @@ public partial class Process : Executive<Process.State>
     {
         if (EnsureNotCompleted(throwOnCompleted: false))
         {
-            this.runTaskSource.TrySetCanceled();
-            this.runCancelSource.Cancel();
+            this.runTaskSource!.TrySetCanceled();
+            this.runCancelSource!.Cancel();
         }
 
         return this.ExecutingTask.Then(this.state.Clone);
@@ -212,7 +211,7 @@ public partial class Process : Executive<Process.State>
     /// <inheritdoc/>
     protected override Task<TimeSpan> ExecuteAsync(State state)
     {
-        return ResumeAsync(this.runCancelSource.Token);
+        return ResumeAsync(this.runCancelSource!.Token);
     }
 
     /// <inheritdoc/>
@@ -350,6 +349,9 @@ public partial class Process : Executive<Process.State>
 
     private void OnChanged()
     {
-        OnChanged(new ProcessChangeEventArgs(this.state.Clone()));
+        if (this.Changed is not null)
+        {
+            OnChanged(new ProcessChangeEventArgs(this.state.Clone()));
+        }
     }
 }

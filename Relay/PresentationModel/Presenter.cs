@@ -89,8 +89,8 @@
 
         private const string DefaultStatus = "Ready";
 
-        private static ICommandManager globalCommandManager;
-        private EventHandler requerySuggested;
+        private static ICommandManager? globalCommandManager;
+        private EventHandler? requerySuggested;
         private readonly Dictionary<Delegate, ICommand> commands;
         private int busyCounter;
         private readonly string initialStatus;
@@ -112,7 +112,7 @@
         }
 
         /// <inheritdoc/>
-        event EventHandler ICommandManager.RequerySuggested
+        event EventHandler? ICommandManager.RequerySuggested
         {
             add => this.requerySuggested += value;
             remove => this.requerySuggested -= value;
@@ -163,7 +163,7 @@
         /// </summary>
         /// <param name="status">The new status message.</param>
         /// <returns>A new <see cref="StatusUpdater"/> instance.</returns>
-        protected IDisposable WithStatus(string status = null) => new StatusUpdater(this, status);
+        protected IDisposable WithStatus(string? status = null) => new StatusUpdater(this, status ?? string.Empty);
 
         /// <summary>
         /// Gets the <see cref="ICommand"/> for the specified <see cref="Func{Task}"/> delegate.
@@ -171,10 +171,9 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object.</returns>
-        protected ICommand GetCommand(Func<Task> execute, Func<bool> canExecute = null)
+        protected ICommand GetCommand(Func<Task> execute, Func<bool>? canExecute = null)
         {
-            ICommand command;
-            if (this.commands.TryGetValue(execute, out command))
+            if (this.commands.TryGetValue(execute, out var command))
                 return command;
 
             command = CreateCommand(execute, canExecute);
@@ -190,10 +189,9 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object</returns>
-        protected ICommand GetCommand<T>(Func<T, Task> execute, Func<T, bool> canExecute = null)
+        protected ICommand GetCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute = null)
         {
-            ICommand command = null;
-            if (this.commands.TryGetValue(execute, out command))
+            if (this.commands.TryGetValue(execute, out var command))
                 return command;
 
             command = CreateCommand(execute, canExecute);
@@ -208,7 +206,7 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object.</returns>
-        protected virtual ICommand CreateCommand(Func<Task> execute, Func<bool> canExecute)
+        protected virtual ICommand CreateCommand(Func<Task> execute, Func<bool>? canExecute)
         {
             return new PresenterCommand(this, execute, canExecute);
         }
@@ -220,13 +218,13 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object.</returns>
-        protected virtual ICommand CreateCommand<T>(Func<T, Task> execute, Func<T, bool> canExecute)
+        protected virtual ICommand CreateCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute)
         {
             return new PresenterCommand<T>(this, execute, canExecute);
         }
 
         /// <inheritdoc/>
-        protected sealed override bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        protected sealed override bool Set<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
         {
             if (base.Set(ref storage, value, propertyName))
             {

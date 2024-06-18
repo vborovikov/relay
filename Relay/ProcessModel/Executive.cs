@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ public abstract class Executive<TState> : IDisposable
     private readonly SemaphoreSlim runSync;
     private readonly Timer runTimer;
     private bool isScheduling;
-    private TaskCompletionSource<bool> exeTaskSource;
+    private TaskCompletionSource<bool>? exeTaskSource;
 
     static Executive()
     {
@@ -39,6 +40,7 @@ public abstract class Executive<TState> : IDisposable
     /// <summary>
     /// Gets a value indicating whether the executive is executing.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(exeTaskSource))]
     public bool IsExecuting { get; private set; }
 
     /// <summary>
@@ -95,7 +97,7 @@ public abstract class Executive<TState> : IDisposable
             Pause();
             StartExecuting();
 
-            runDelay = await ExecuteAsync(state as TState).ConfigureAwait(false);
+            runDelay = await ExecuteAsync((TState)state).ConfigureAwait(false);
         }
         finally
         {

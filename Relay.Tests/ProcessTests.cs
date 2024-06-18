@@ -11,7 +11,7 @@ public class ProcessTests
 {
     private class SimpleContext
     {
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
 
         public int Number { get; set; }
     }

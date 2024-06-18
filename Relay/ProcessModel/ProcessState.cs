@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
 /// Represents the possible statuses of a process.
@@ -39,7 +40,7 @@ public partial class Process
     /// <summary>
     /// Represents a process state.
     /// </summary>
-    public sealed class State : ICloneable, IEquatable<State>
+    public sealed class State : ICloneable, IEquatable<State?>
     {
         /// <summary>
         /// Gets the unique identifier of the process.
@@ -64,7 +65,7 @@ public partial class Process
         /// <summary>
         /// Gets or sets the exception that occurred during process execution.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="State"/> class.
@@ -90,16 +91,15 @@ public partial class Process
         object ICloneable.Clone() => Clone();
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return Equals(obj as State);
+            return obj is State state && Equals(state);
         }
 
         /// <inheritdoc />
-        public bool Equals(State other)
+        public bool Equals([NotNullWhen(true)] State? other)
         {
-            return other != null &&
-                   this.ProcessId.Equals(other.ProcessId);
+            return other is not null && this.ProcessId.Equals(other.ProcessId);
         }
 
         /// <inheritdoc />
@@ -114,9 +114,9 @@ public partial class Process
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
         /// <returns><c>true</c> if a and b are equal; otherwise, <c>false</c>.</returns>
-        public static bool operator ==(State left, State right)
+        public static bool operator ==(State? left, State? right)
         {
-            return EqualityComparer<State>.Default.Equals(left, right);
+            return EqualityComparer<State?>.Default.Equals(left, right);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ public partial class Process
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
         /// <returns><c>true</c> if a and b are not equal; otherwise, <c>false</c>.</returns>
-        public static bool operator !=(State left, State right)
+        public static bool operator !=(State? left, State? right)
         {
             return !(left == right);
         }

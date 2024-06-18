@@ -1,6 +1,5 @@
 ﻿namespace Relay.PresentationModel
 {
-    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
@@ -18,7 +17,7 @@
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Raises the <see cref="PropertyChanged"/> event.
@@ -34,9 +33,9 @@
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>
         /// <returns>Always <c>true</c>.</returns>
-        protected bool RaisePropertyChanged(string propertyName = null)
+        protected bool RaisePropertyChanged(string? propertyName = null)
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? String.Empty));
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? string.Empty));
             return true;
         }
 
@@ -48,7 +47,7 @@
         /// <param name="value">The new value of the field.</param>
         /// <param name="propertyName">The name of the property that changed. If not specified, the caller's name is used.</param>
         /// <returns><c>true</c> if the value was changed; otherwise, <c>false</c>.</returns>
-        protected virtual bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        protected virtual bool Set<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(storage, value))
                 return false;
