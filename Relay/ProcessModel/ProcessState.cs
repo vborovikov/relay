@@ -50,22 +50,22 @@ public partial class Process
         /// <summary>
         /// Gets or sets the status of the process.
         /// </summary>
-        public ProcessStatus ProcessStatus { get; set; }
+        public ProcessStatus ProcessStatus { get; internal set; }
 
         /// <summary>
         /// Gets or sets the count of activities that have been completed.
         /// </summary>
-        public int CompletedActivityCount { get; set; }
+        public int CompletedActivityCount { get; internal set; }
 
         /// <summary>
         /// Gets or sets the index of the activity being compensated.
         /// </summary>
-        public int CompensationIndex { get; set; }
+        public int CompensationIndex { get; internal set; }
 
         /// <summary>
         /// Gets or sets the exception that occurred during process execution.
         /// </summary>
-        public Exception? Exception { get; set; }
+        public Exception? Exception { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="State"/> class.
