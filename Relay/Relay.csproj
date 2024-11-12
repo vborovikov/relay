@@ -28,4 +28,8 @@
   <ItemGroup>
     <None Include="..\README.md" Pack="True" PackagePath="\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
 </Project>

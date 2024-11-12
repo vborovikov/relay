@@ -149,14 +149,14 @@
         /// <param name="dueTime">The due time of the command execution.</param>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        Task AddAsync<TCommand>(TCommand command, DateTimeOffset dueTime, CancellationToken cancellationToken) where TCommand : ICommand;
+        ValueTask AddAsync<TCommand>(TCommand command, DateTimeOffset dueTime, CancellationToken cancellationToken) where TCommand : ICommand;
 
         /// <summary>
         /// Gets the next pending command.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that wraps the pending command.</returns>
-        Task<IPersistentCommand?> GetAsync(CancellationToken cancellationToken);
+        ValueTask<IPersistentCommand?> GetAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the command from the store.
@@ -164,7 +164,7 @@
         /// <param name="command">The persistent command object.</param>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        Task RemoveAsync(IPersistentCommand command, CancellationToken cancellationToken);
+        ValueTask RemoveAsync(IPersistentCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Increments the retry count of the command or removes it from the store.
@@ -173,6 +173,6 @@
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <remarks>This method is called when the command execution fails. It never throws.</remarks>
-        Task RetryAsync(IPersistentCommand command, CancellationToken cancellationToken);
+        ValueTask RetryAsync(IPersistentCommand command, CancellationToken cancellationToken);
     }
 }

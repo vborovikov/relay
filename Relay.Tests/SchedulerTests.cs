@@ -67,26 +67,26 @@ public class SchedulerTests
     {
         private readonly List<PersistentCommand> persistentCommands = [];
 
-        public Task AddAsync<TCommand>(TCommand command, DateTimeOffset dueTime, CancellationToken cancellationToken) where TCommand : ICommand
+        public ValueTask AddAsync<TCommand>(TCommand command, DateTimeOffset dueTime, CancellationToken cancellationToken) where TCommand : ICommand
         {
             this.persistentCommands.Add(new(command, dueTime));
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
-        public Task<IPersistentCommand?> GetAsync(CancellationToken cancellationToken)
+        public ValueTask<IPersistentCommand?> GetAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(this.persistentCommands.MinBy(pc => pc.DueTime) as IPersistentCommand);
+            return ValueTask.FromResult(this.persistentCommands.MinBy(pc => pc.DueTime) as IPersistentCommand);
         }
 
-        public Task RemoveAsync(IPersistentCommand command, CancellationToken cancellationToken)
+        public ValueTask RemoveAsync(IPersistentCommand command, CancellationToken cancellationToken)
         {
             this.persistentCommands.Remove((PersistentCommand)command);
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
-        public Task RetryAsync(IPersistentCommand command, CancellationToken cancellationToken)
+        public ValueTask RetryAsync(IPersistentCommand command, CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
     }
 }
