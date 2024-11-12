@@ -30,6 +30,8 @@
         {
             while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // get the pending command
                 var pending = await this.commandStore.GetAsync(cancellationToken).ConfigureAwait(false);
 

@@ -2,6 +2,7 @@ namespace Relay.Tests;
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Relay.RequestModel;
 using Relay.RequestModel.Default;
 
@@ -24,6 +25,21 @@ public class SchedulerTests
         Assert.IsTrue(actualLag < TestCommand.Lag);
         
         cancelSource.Cancel();
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_EarlyCancel_Completed()
+    {
+        var cancelSource = new CancellationTokenSource();
+        var scheduler = new TestCommandScheduler();
+        var processTask = scheduler.ProcessAsync(cancelSource.Token);
+
+        await Task.Delay(50);
+        cancelSource.Cancel();
+        await Task.Delay(50);
+
+        Assert.IsTrue(processTask.IsCompleted);
+        Assert.IsTrue(processTask.IsCanceled);
     }
 
     private record TestCommand(CancellationToken CancellationToken = default) : ICommand
