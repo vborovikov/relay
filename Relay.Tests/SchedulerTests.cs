@@ -1,6 +1,5 @@
 namespace Relay.Tests;
 
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Relay.RequestModel;
@@ -10,7 +9,7 @@ using Relay.RequestModel.Default;
 public class SchedulerTests
 {
     [TestMethod]
-    public async Task ScheduleAsync_3secFromNow_Delayed()
+    public async Task ScheduleAsync_DelayFromNow_Delayed()
     {
         var cancelSource = new CancellationTokenSource();
         var scheduler = new TestCommandScheduler();
@@ -19,17 +18,18 @@ public class SchedulerTests
         var command = new TestCommand { DueTime = DateTimeOffset.Now.Add(TestCommand.Delay) };
         await scheduler.ScheduleAsync(command, command.DueTime);
 
-        await Task.Delay(TestCommand.Delay.Add(TimeSpan.FromSeconds(1)));
-        var actualDelay = command.ActualTime - command.DueTime;
-        Debug.WriteLine(actualDelay.ToString());
-        Assert.IsTrue(actualDelay >= TestCommand.Delay);
+        await Task.Delay(TestCommand.Delay.Add(TestCommand.Lag));
+        Assert.IsTrue(command.ActualTime > command.DueTime);
+        var actualLag = command.ActualTime - command.DueTime;
+        Assert.IsTrue(actualLag < TestCommand.Lag);
         
         cancelSource.Cancel();
     }
 
     private record TestCommand(CancellationToken CancellationToken = default) : ICommand
     {
-        public static readonly TimeSpan Delay = TimeSpan.FromSeconds(3);
+        public static readonly TimeSpan Delay = TimeSpan.FromSeconds(1);
+        public static readonly TimeSpan Lag = TimeSpan.FromMilliseconds(50);
 
         public DateTimeOffset DueTime { get; set; }
         public DateTimeOffset ActualTime { get; set; }
@@ -37,9 +37,7 @@ public class SchedulerTests
 
     private class TestCommandScheduler : DefaultRequestScheduler, ICommandHandler<TestCommand>
     {
-        public TestCommandScheduler() : base(new PersistentCommandStore())
-        {
-        }
+        public TestCommandScheduler() : base(new PersistentCommandStore()) { }
 
         public void Execute(TestCommand command)
         {
