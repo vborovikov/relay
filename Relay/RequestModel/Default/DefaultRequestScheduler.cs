@@ -29,7 +29,7 @@
         public TimeSpan WaitPeriod { get; }
 
         /// <inheritdoc/>
-        public async Task ScheduleAsync<TCommand>(TCommand command, DateTimeOffset at) where TCommand : ICommand
+        public virtual async Task ScheduleAsync<TCommand>(TCommand command, DateTimeOffset at) where TCommand : ICommand
         {
             // store the command
             await this.commandStore.AddAsync(command, at, command.CancellationToken).ConfigureAwait(false);
@@ -79,13 +79,39 @@
 
                 try
                 {
-                    await this.ExecuteGenericAsync(pending.Command).ConfigureAwait(false);
                     await this.commandStore.RemoveAsync(pending, cancellationToken).ConfigureAwait(false);
+                    ExecuteCommandTask(this.ExecuteGenericAsync(pending.Command), pending, cancellationToken);
                 }
                 catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
                 {
-                    await this.commandStore.RetryAsync(pending, cancellationToken).ConfigureAwait(false);
+                    await this.commandStore.RetryAsync(pending, x, cancellationToken).ConfigureAwait(false);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Observes the command task to avoid the UnobservedTaskException event to be raised.
+        /// </summary>
+        private void ExecuteCommandTask(Task commandTask, IPersistentCommand pending, CancellationToken cancellationToken)
+        {
+            if (!commandTask.IsCompleted || commandTask.IsFaulted)
+            {
+                _ = ExecuteCommandAwaited(commandTask, pending, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Executes the command task and retries on failure.
+        /// </summary>
+        private async ValueTask ExecuteCommandAwaited(Task commandTask, IPersistentCommand pending, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await commandTask.ConfigureAwait(false);
+            }
+            catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
+            {
+                await this.commandStore.RetryAsync(pending, x, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -167,12 +193,13 @@
         ValueTask RemoveAsync(IPersistentCommand command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Increments the retry count of the command or removes it from the store.
+        /// Adds the command to the store for a retry attempt.
         /// </summary>
         /// <param name="command">The persistent command object.</param>
+        /// <param name="exception">The exception that caused the retry.</param>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <remarks>This method is called when the command execution fails. It never throws.</remarks>
-        ValueTask RetryAsync(IPersistentCommand command, CancellationToken cancellationToken);
+        ValueTask RetryAsync(IPersistentCommand command, Exception exception, CancellationToken cancellationToken);
     }
 }

@@ -84,7 +84,7 @@ public class SchedulerTests
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask RetryAsync(IPersistentCommand command, CancellationToken cancellationToken)
+        public ValueTask RetryAsync(IPersistentCommand command, Exception exception, CancellationToken cancellationToken)
         {
             return ValueTask.CompletedTask;
         }
