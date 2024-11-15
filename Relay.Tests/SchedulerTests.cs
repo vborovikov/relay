@@ -42,6 +42,22 @@ public class SchedulerTests
         Assert.IsTrue(processTask.IsCanceled);
     }
 
+    [TestMethod]
+    public async Task ProcessAsync_FailedCommand_Retried()
+    {
+        var cancelSource = new CancellationTokenSource();
+        var scheduler = new TestCommandScheduler();
+        _ = scheduler.ProcessAsync(cancelSource.Token);
+
+        var command = new TestRetryCommand();
+        await scheduler.ScheduleAsync(command, DateTimeOffset.Now);
+
+        await Task.Delay(50);
+        Assert.AreEqual(2, command.RetryCount);
+
+        cancelSource.Cancel();
+    }
+
     private record TestCommand(CancellationToken CancellationToken = default) : ICommand
     {
         public static readonly TimeSpan Delay = TimeSpan.FromSeconds(1);
@@ -51,13 +67,28 @@ public class SchedulerTests
         public DateTimeOffset ActualTime { get; set; }
     }
 
-    private class TestCommandScheduler : DefaultRequestScheduler, ICommandHandler<TestCommand>
+    private record TestRetryCommand : ICommand
+    {
+        public CancellationToken CancellationToken => default;
+        public int RetryCount { get; set; }
+    }
+
+    private class TestCommandScheduler : DefaultRequestScheduler, ICommandHandler<TestCommand>, ICommandHandler<TestRetryCommand>
     {
         public TestCommandScheduler() : base(new PersistentCommandStore()) { }
 
         public void Execute(TestCommand command)
         {
             command.ActualTime = DateTimeOffset.Now;
+        }
+
+        public void Execute(TestRetryCommand command)
+        {
+            command.RetryCount++;
+            if (command.RetryCount == 1)
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 
@@ -86,6 +117,7 @@ public class SchedulerTests
 
         public ValueTask RetryAsync(IPersistentCommand command, Exception exception, CancellationToken cancellationToken)
         {
+            this.persistentCommands.Add((PersistentCommand)command);
             return ValueTask.CompletedTask;
         }
     }

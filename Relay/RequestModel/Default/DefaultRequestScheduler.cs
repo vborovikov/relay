@@ -80,7 +80,7 @@
                 try
                 {
                     await this.commandStore.RemoveAsync(pending, cancellationToken).ConfigureAwait(false);
-                    ExecuteCommandTask(this.ExecuteGenericAsync(pending.Command), pending, cancellationToken);
+                    ExecuteCommandTask(pending, cancellationToken);
                 }
                 catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
                 {
@@ -92,8 +92,12 @@
         /// <summary>
         /// Observes the command task to avoid the UnobservedTaskException event to be raised.
         /// </summary>
-        private void ExecuteCommandTask(Task commandTask, IPersistentCommand pending, CancellationToken cancellationToken)
+        private void ExecuteCommandTask(IPersistentCommand pending, CancellationToken cancellationToken)
         {
+            var commandTask = Task.Run(() => this.ExecuteGenericAsync(pending.Command), cancellationToken);
+
+            // Only care about tasks that may fault (not completed) or are faulted,
+            // so fast-path for SuccessfullyCompleted and Canceled tasks.
             if (!commandTask.IsCompleted || commandTask.IsFaulted)
             {
                 _ = ExecuteCommandAwaited(commandTask, pending, cancellationToken);
@@ -112,6 +116,7 @@
             catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
             {
                 await this.commandStore.RetryAsync(pending, x, cancellationToken).ConfigureAwait(false);
+                this.scheduledEvent.Set();
             }
         }
 
