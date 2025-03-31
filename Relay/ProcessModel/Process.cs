@@ -98,7 +98,7 @@ public partial class Process : Executive<Process.State>
         cancelTokenReg = cancellationToken.Register(async delegate
         {
             tcs.TrySetCanceled(cancellationToken);
-            await AbortAsync();
+            await AbortAsync().ConfigureAwait(false);
             cancelTokenReg?.Dispose();
         });
 
@@ -236,10 +236,10 @@ public partial class Process : Executive<Process.State>
             switch (this.state.ProcessStatus)
             {
                 case ProcessStatus.Executing:
-                    await ResumeExecuting(cancellationToken);
+                    await ResumeExecuting(cancellationToken).ConfigureAwait(false);
                     break;
                 case ProcessStatus.Compensating:
-                    await ResumeCompensating(cancellationToken);
+                    await ResumeCompensating(cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -276,7 +276,7 @@ public partial class Process : Executive<Process.State>
             try
             {
                 var currentActivity = this.activities[this.state.CompletedActivityCount];
-                await currentActivity.ExecuteAsync(cancellationToken);
+                await currentActivity.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
                 this.state.CompletedActivityCount++;
                 OnChanged();
@@ -308,7 +308,7 @@ public partial class Process : Executive<Process.State>
             try
             {
                 var currentActivity = this.activities[this.state.CompensationIndex];
-                await currentActivity.CompensateAsync(cancellationToken);
+                await currentActivity.CompensateAsync(cancellationToken).ConfigureAwait(false);
 
                 this.state.CompensationIndex--;
                 OnChanged();

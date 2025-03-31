@@ -41,7 +41,7 @@ namespace Relay.RequestModel.Default
                 Debug.WriteLine($"{this.dispatcherName} executing {commandName} [{command}]");
                 stopwatch.Start();
 
-                await this.dispatcher.ExecuteAsync(command);
+                await this.dispatcher.ExecuteAsync(command).ConfigureAwait(false);
             }
             catch (Exception x)
             {
@@ -70,7 +70,7 @@ namespace Relay.RequestModel.Default
                 Debug.WriteLine($"{this.dispatcherName} running {queryName} [{query}]");
                 stopwatch.Start();
 
-                return await this.dispatcher.RunAsync(query);
+                return await this.dispatcher.RunAsync(query).ConfigureAwait(false);
             }
             catch (Exception x)
             {

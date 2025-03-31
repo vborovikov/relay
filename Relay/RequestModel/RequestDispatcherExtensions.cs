@@ -48,7 +48,7 @@
         {
             var method = runAsyncMethod.MakeGenericMethod(FindGenericArgument(query.GetType()));
             var queryTask = (Task)method.Invoke(dispatcher, new[] { query });
-            await queryTask;
+            await queryTask.ConfigureAwait(false);
             var result = queryTask
                 .GetType()
                 .GetProperty(nameof(Task<object>.Result))

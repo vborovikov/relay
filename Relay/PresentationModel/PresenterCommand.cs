@@ -64,7 +64,7 @@
 
                 using (this.presenter.Busy())
                 {
-                    await ExecuteOverrideAsync(parameter);
+                    await ExecuteOverrideAsync(parameter).ConfigureAwait(continueOnCapturedContext: true);
                 }
             }
             finally
