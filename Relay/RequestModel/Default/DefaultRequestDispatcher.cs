@@ -106,6 +106,13 @@
         }
 
         /// <summary>
+        /// Creates a request dispatcher from a handler.
+        /// </summary>
+        /// <param name="handler">The handler object to use to handle requests.</param>
+        /// <returns>A request dispatcher that uses the specified handler.</returns>
+        public static IRequestDispatcher From(object handler) => new InternalRequestDispatcher(handler);
+
+        /// <summary>
         /// Gets the request handler that matches the specified type
         /// by resolving it from the underlying dependency injection container.
         /// </summary>
@@ -113,5 +120,17 @@
         /// <returns>The request handler that matches the specified type.</returns>
         protected override object GetRequestHandler(Type requestHandlerType) =>
             this.serviceProvider.GetService(requestHandlerType);
+
+        private sealed class InternalRequestDispatcher : DefaultRequestDispatcherBase
+        {
+            private readonly object handler;
+
+            public InternalRequestDispatcher(object handler)
+            {
+                this.handler = handler;
+            }
+
+            protected override object GetRequestHandler(Type requestHandlerType) => this.handler;
+        }
     }
 }
