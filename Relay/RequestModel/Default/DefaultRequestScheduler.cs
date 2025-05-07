@@ -82,7 +82,7 @@
                     await this.commandStore.RemoveAsync(pending, cancellationToken).ConfigureAwait(false);
                     ExecuteCommandTask(pending, cancellationToken);
                 }
-                catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
+                catch (Exception x) when (x is not OperationCanceledException)
                 {
                     await this.commandStore.RetryAsync(pending, x, cancellationToken).ConfigureAwait(false);
                 }
@@ -113,7 +113,7 @@
             {
                 await commandTask.ConfigureAwait(false);
             }
-            catch (Exception x) when (x is not OperationCanceledException ocx || ocx.CancellationToken != cancellationToken)
+            catch (Exception x) when (x is not OperationCanceledException)
             {
                 await this.commandStore.RetryAsync(pending, x, cancellationToken).ConfigureAwait(false);
                 this.scheduledEvent.Set();
