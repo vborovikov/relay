@@ -65,7 +65,7 @@
         /// </summary>
         /// <param name="requestHandlerType">The type of the request handler to get.</param>
         /// <returns>The request handler that matches the specified type.</returns>
-        protected virtual object GetRequestHandler(Type requestHandlerType) => this;
+        protected virtual object? GetRequestHandler(Type requestHandlerType) => this;
 
         private Task<TResult> RunInternalAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
         {
@@ -118,7 +118,7 @@
         /// </summary>
         /// <param name="requestHandlerType">The type of the request handler to get.</param>
         /// <returns>The request handler that matches the specified type.</returns>
-        protected override object GetRequestHandler(Type requestHandlerType) =>
+        protected override object? GetRequestHandler(Type requestHandlerType) =>
             this.serviceProvider.GetService(requestHandlerType);
 
         private sealed class InternalRequestDispatcher : DefaultRequestDispatcherBase
@@ -130,7 +130,7 @@
                 this.handler = handler;
             }
 
-            protected override object GetRequestHandler(Type requestHandlerType) => this.handler;
+            protected override object? GetRequestHandler(Type requestHandlerType) => this.handler;
         }
     }
 }
