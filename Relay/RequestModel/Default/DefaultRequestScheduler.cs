@@ -58,6 +58,7 @@
                 if (waitPeriod > TimeSpan.Zero)
                 {
                     // wait for it or a new command scheduled
+                    //todo: consider add here pulse event every hour or so
                     await Task.WhenAny(Task.Delay(waitPeriod, cancellationToken), this.scheduledEvent.WaitAsync()).ConfigureAwait(false);
                     // reset the event here
                     this.scheduledEvent.Reset();
