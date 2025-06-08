@@ -171,16 +171,8 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object.</returns>
-        protected ICommand GetCommand(Func<Task> execute, Func<bool>? canExecute = null)
-        {
-            if (this.commands.TryGetValue(execute, out var command))
-                return command;
-
-            command = CreateCommand(execute, canExecute);
-            this.commands.Add(execute, command);
-
-            return command;
-        }
+        protected ICommand GetCommand(Func<Task> execute, Func<bool>? canExecute = null) =>
+            GetCommand(execute, () => CreateCommand(execute, canExecute));
 
         /// <summary>
         /// Gets the <see cref="ICommand"/> for the specified <see cref="Func{T, Task}"/> delegate.
@@ -189,16 +181,8 @@
         /// <param name="execute">The execution entry point for the command.</param>
         /// <param name="canExecute">The delegate that determines whenever the command can be executed.</param>
         /// <returns>Returns the command object</returns>
-        protected ICommand GetCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute = null)
-        {
-            if (this.commands.TryGetValue(execute, out var command))
-                return command;
-
-            command = CreateCommand(execute, canExecute);
-            this.commands.Add(execute, command);
-
-            return command;
-        }
+        protected ICommand GetCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute = null) =>
+            GetCommand(execute, () => CreateCommand(execute, canExecute));
 
         /// <summary>
         /// Creates a new <see cref="PresenterCommand"/> instance for the specified <see cref="Func{Task}"/> delegate.
@@ -221,6 +205,22 @@
         protected virtual ICommand CreateCommand<T>(Func<T, Task> execute, Func<T, bool>? canExecute)
         {
             return new PresenterCommand<T>(this, execute, canExecute);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ICommand"/> for the specified delegate.
+        /// </summary>
+        /// <param name="execute">The execution entry point for the command.</param>
+        /// <param name="createCommand">The delegate that creates the command object.</param>
+        /// <returns>Returns the command object.</returns>
+        protected ICommand GetCommand(Delegate execute, Func<ICommand> createCommand)
+        {
+            if (this.commands.TryGetValue(execute, out var command))
+                return command;
+
+            command = createCommand();
+            this.commands.Add(execute, command);
+            return command;
         }
 
         /// <inheritdoc/>
