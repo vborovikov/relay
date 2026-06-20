@@ -1,5 +1,6 @@
 ﻿namespace Relay.RequestModel
 {
+    using System.Text.Json.Serialization;
     using System.Threading;
 
     /// <summary>
@@ -10,6 +11,7 @@
         /// <summary>
         /// Gets the cancellation token associated with the request.
         /// </summary>
+        [JsonIgnore]
         CancellationToken CancellationToken { get; }
     }
 }
